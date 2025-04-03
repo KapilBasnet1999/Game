@@ -7,13 +7,13 @@ using System.Runtime.CompilerServices;
 
 public class PLayerUIManager : MonoBehaviour
 {
-    private static PLayerUIManager instance;
-    public static PLayerUIManager Instance
-    {
-        get { return instance; }
-        set { instance = value; }
-    }
+    public static PLayerUIManager instance;
 
+
+    [Header("Network Join")]
+    [SerializeField] bool startGameAsClient;
+
+    [HideInInspector] public PlayerUiHudManager playerUiHudManager;
     private void Awake()
     {
         if (instance == null)
@@ -24,6 +24,7 @@ public class PLayerUIManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+        playerUiHudManager = GetComponentInChildren<PlayerUiHudManager>();
     }
 
     private void Start()
@@ -31,8 +32,7 @@ public class PLayerUIManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    [Header("Network Join")]
-    [SerializeField] bool startGameAsClient;
+
 
     private void Update()
     {

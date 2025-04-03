@@ -6,6 +6,8 @@ public class PlayerManager : CharacterManager
 {
     [HideInInspector] public PlayerAnimationManager playerAnimatorManager;
     [HideInInspector] public PlayerLocomotionManager playerLocomotionManager;
+    [HideInInspector] public PlayerNetworkManager playerNetworkManager;
+    [HideInInspector] public PlayerStatsManager playerStatsManager;
     protected override void Awake()
     {
         base.Awake();
@@ -14,6 +16,8 @@ public class PlayerManager : CharacterManager
 
         playerLocomotionManager = GetComponent<PlayerLocomotionManager>();
         playerAnimatorManager = GetComponent<PlayerAnimationManager>();
+        playerNetworkManager = GetComponent<PlayerNetworkManager>();
+        playerStatsManager = GetComponent<PlayerStatsManager>();
     }
     protected override void Update()
     {
@@ -26,6 +30,9 @@ public class PlayerManager : CharacterManager
 
         // HANDLE ALL OF OUR CHARACTERS MOVEMENT
         playerLocomotionManager.HandleAllMovement();
+
+        //  REGEN STAMINA
+        playerStatsManager.RegenerateStamina();
     }
 
     protected override void LateUpdate()
@@ -46,6 +53,15 @@ public class PlayerManager : CharacterManager
         {
             PlayerCamera.instance.player = this;
             PlayerInputManager.instance.player = this;
+
+            playerNetworkManager.currentStamina.OnValueChanged += PLayerUIManager.instance.playerUiHudManager.SetNewStaminaValue;
+            playerNetworkManager.currentStamina.OnValueChanged += playerStatsManager.ResetStaminaRegenTimer;
+
+            //  THIS WILL BE MOVED WHEN SAVING AND LOADING IS ADDED
+            playerNetworkManager.maxStamina.Value = playerStatsManager.CalculateStaminaBasedOnLevel(playerNetworkManager.endurance.Value);
+            playerNetworkManager.currentStamina.Value = playerStatsManager.CalculateStaminaBasedOnLevel(playerNetworkManager.endurance.Value);
+            PLayerUIManager.instance.playerUiHudManager.SetMaxStaminaValue(playerNetworkManager.maxStamina.Value);
+            
         }
 
     }

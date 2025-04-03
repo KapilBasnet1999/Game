@@ -28,6 +28,8 @@ public class PlayerInputManager : MonoBehaviour
 
     [Header("PLAYER ACTON INPUT")]
     [SerializeField] bool dodgeInput = false;
+    [SerializeField] bool sprintInput = false;
+    [SerializeField] bool jumpInput = false;
 
 
     private void Awake()
@@ -77,6 +79,12 @@ public class PlayerInputManager : MonoBehaviour
             playerControls.PlayerMovement.Movement.performed += i => movementInput = i.ReadValue<Vector2>();
             playerControls.PlayerCamera.Movement.performed += i => cameraInput = i.ReadValue<Vector2>();
             playerControls.PlayerActions.Dodge.performed += i => dodgeInput = true;
+            playerControls.PlayerActions.Jump.performed += i => jumpInput = true;
+
+            //  HOLDING THE INPUT SETS IT TO TRUE
+            playerControls.PlayerActions.Sprint.performed += i => sprintInput = true;
+            //  LETTING GO OF THE INPUT SETS IT TO FALSE
+            playerControls.PlayerActions.Sprint.canceled += i => sprintInput = false;
         }
 
         playerControls.Enable();
@@ -115,6 +123,7 @@ public class PlayerInputManager : MonoBehaviour
         HandlePlayerMovementInput();
         HandleCameraMovementInput();
         HandleDodgeInput();
+        HandleSprintInput();
 
     }
     //MOVEMENT
@@ -140,7 +149,7 @@ public class PlayerInputManager : MonoBehaviour
             return;
 
         //IF WE ARE NOT LOCKED ON, ONLY USE THE MOVEAMOUNT
-        player.playerAnimatorManager.UpdateAnimatorMovementParameters(0, moveAmount);
+        player.playerAnimatorManager.UpdateAnimatorMovementParameters(0, moveAmount,player.playerNetworkManager.isSprinting.Value);
 
         //  IF WE ARE LOCKED ON PASS THE HORIZONTAL MOVEMENT AS WELL
     }
@@ -162,6 +171,33 @@ public class PlayerInputManager : MonoBehaviour
             //perform a dodge
             player.playerLocomotionManager.AttemptToPerformDodge();
         }
+    }
+    private void HandleSprintInput()
+    {
+        if(sprintInput)
+        {
+            player.playerLocomotionManager.HandleSprinting();
+
+        }
+        else
+        {
+            player.playerNetworkManager.isSprinting.Value = false;
+        }
+        // Handle Sprinting
+    }
+
+    private void HandleJumpInput()
+    {
+        if (jumpInput)
+        {
+            jumpInput = false;
+
+            //IF WE HAVE A UI WINDOW OPEN, SIMPLY RETURN WITHOUT DOING ANYTHING
+
+            //  ATTEMPT TO PERFORM A JUMP
+            player.playerLocomotionManager.AttemptToPerformJump();
+        }
+            
     }
 
 }
